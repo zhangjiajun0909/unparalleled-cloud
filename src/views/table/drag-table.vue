@@ -32,7 +32,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="Readings" width="95">
+      <el-table-column align="center" label="Readings1111" width="95">
         <template slot-scope="{row}">
           <span>{{ row.pageviews }}</span>
         </template>

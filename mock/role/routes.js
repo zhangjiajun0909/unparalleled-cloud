@@ -40,8 +40,8 @@ const constantRoutes = [
       {
         path: 'dashboard',
         component: 'views/dashboard/index',
-        name: 'Dashboard',
-        meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
+        name: '33Dashboard',
+        meta: { title: '22Dashboard', icon: 'dashboard', affix: true }
       }
     ]
   },
@@ -228,7 +228,7 @@ const asyncRoutes = [
     redirect: 'noRedirect',
     name: 'Charts',
     meta: {
-      title: 'Charts',
+      title: '用户中心',
       icon: 'chart'
     },
     children: [
