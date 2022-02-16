@@ -1,4 +1,50 @@
 import request from '@/utils/request'
+import requestTest from '@/utils/request-test'
+
+export function getList(params) {
+  return requestTest({
+    url: 'v1/user-center/list',
+    method: 'get',
+    params: params
+  })
+}
+
+export function addUser(data) {
+  return requestTest({
+    url: 'v1/user-center/user/add',
+    method: 'post',
+    data
+  })
+}
+
+export function getDeviceList() {
+  return requestTest({
+    url: 'v1/device/list',
+    method: 'get'
+  })
+}
+
+export function deleteUser(userId) {
+  return requestTest({
+    url: `v1/user-center/user/${userId}/invalid`,
+    method: 'post'
+  })
+}
+
+export function getRealTimeCardiogram(data) {
+  return requestTest({
+    url: `v1/cardiogram/realTime`,
+    method: 'post',
+    data
+  })
+}
+
+export function getSingleList(deviceId) {
+  return requestTest({
+    url: `v1/device/${deviceId}`,
+    method: 'get'
+  })
+}
 
 export function login(data) {
   return request({
