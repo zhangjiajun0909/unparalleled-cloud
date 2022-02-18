@@ -42,11 +42,11 @@
               value-format="yyyy-MM-dd HH:mm:ss"
             /> -->
           </el-form-item>
-          <el-form-item label="导连:">
+          <el-form-item label="导联:">
             <el-checkbox-group
               v-model="form.sigNames"
               :min="1"
-              :max="4"
+              :max="3"
             >
               <el-checkbox v-for="line in signalList" :key="line" :label="line" name="signal">{{ line }}</el-checkbox>
             </el-checkbox-group>
@@ -73,10 +73,10 @@
         </el-form>
       </div>
     </div>
-    <div v-if="!form.isRealData && signalList" id="singleEcg_" v-loading="loading">
-      <canvas v-for="index of signalList.length" :id="`myCanvas${index}`" :key="index" class="myCanvas" width="1100" height="230" />
+    <div v-if="!form.isRealData && form.sigNames" id="singleEcg_" v-loading="loading">
+      <canvas v-for="index of form.sigNames.length" :id="`myCanvas${index}`" :key="index" class="myCanvas" width="1100" height="230" />
     </div>
-    <div v-for="index of signalList.length" v-else :key="index" v-loading="loading" class="singleEcg_lala">
+    <div v-for="index of form.sigNames.length" v-else :key="index" v-loading="loading" class="singleEcg_lala">
       <canvas :id="`myCanvas${index}`" width="1080" height="230" />
       <div class="box2">
         <canvas :id="`line${index}`" width="1080" height="230" />
@@ -175,10 +175,13 @@ export default {
         startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
         endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
       },
-      type: 1
+      type: 1,
+      firstImplement: true,
+      timerStart: false
     }
   },
   mounted() {
+    this.signalList = []
     getSingleList(this.form.deviceId).then(res => {
       if (res) {
         this.signalList = res.data.sigNames
@@ -187,6 +190,9 @@ export default {
   },
   beforeDestroy() {
     clearTimeout()
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   },
   methods: {
     guide() {
@@ -195,7 +201,7 @@ export default {
     },
     draw(list) {
       if (!list) return
-      list.map((v, i) => {
+      (list || []).map((v, i) => {
         var canvas = document.getElementById(`myCanvas${i + 1}`)
         if (!canvas) return
         canvas.width = 1100
@@ -219,7 +225,6 @@ export default {
           }
         }
       })
-      // }
     },
     onSubmit(type) {
       this.$refs['ruleForm'].validate((valid) => {
@@ -248,32 +253,29 @@ export default {
             })
           } else {
             this.loading = false
-            let firstImplement = true
-            if (firstImplement) {
-              getRealTimeCardiogram({
-                'sigName': this.$route.query.username,
-                'deviceId': this.$route.query.deviceId,
-                'interval': 10,
-                'timeUnit': 'SECONDS',
-                'sigNames': this.form.sigNames
-              }).then(res => {
-                if (res) {
-                  this.fecg_data = res.data
-                  if (this.fecg_data && this.fecg_data.length > 0) {
-                    this.drawRealTimeLine(this.fecg_data)
-
-                    this.timer = setInterval(() => {
-                      this.drawRealTimeLine(this.fecg_data)
-                    }, 10000)
-                    firstImplement = false
-                    if (document.getElementById('myCanvas1')) {
-                      document.getElementById('myCanvas1').scrollIntoView({ block: 'start', behavior: 'smooth' })
-                    }
-                  }
-                }
-              })
+            this.getRealTimeCardiogram()
+            if (document.getElementById('myCanvas1')) {
+              document.getElementById('myCanvas1').scrollIntoView({ block: 'start', behavior: 'smooth' })
             }
           }
+        }
+      })
+    },
+    getRealTimeCardiogram() {
+      getRealTimeCardiogram({
+        'sigName': this.$route.query.username,
+        'deviceId': this.$route.query.deviceId,
+        'interval': 10,
+        'timeUnit': 'SECONDS',
+        'sigNames': this.form.sigNames
+      }).then(res => {
+        if (res) {
+          this.fecg_data = res.data
+          this.drawRealTimeLine(this.fecg_data)
+          clearInterval(this.timer)
+          this.timer = setInterval(() => {
+            this.getRealTimeCardiogram()
+          }, 10000)
         }
       })
     },
@@ -304,12 +306,13 @@ export default {
       }
     },
     handleData(e) {
+      if (this.timer) {
+        clearInterval(this.timer)
+      }
       this.form.startTime = null
       this.form.endTime = null
       this.form.pageNum = 1
-      if (!e) {
-        clearInterval(this.timer)
-      }
+      this.stop()
       this.draw(null)
       this.form.sigNames = []
     },
@@ -376,6 +379,7 @@ export default {
       var x0 = parseInt(list[count - 1].timestamp) / 10.0 + offsetx
       var num = 100 - 100 * parseFloat(list[count].data)
       var num0 = 100 - 100 * parseFloat(list[count - 1].data)
+      ctx.beginPath()
       ctx.clearRect(x, 0, 25, 750)
       ctx.moveTo(x0, num0)
       ctx.lineTo(x, num)
@@ -392,21 +396,24 @@ export default {
       }
     },
     drawRealTimeLine(data) {
-      data.map((v, i) => {
-        this.createBackground(i + 1)
+      (data || []).map((v, i) => {
         var canvas = document.getElementById(`line${i + 1}`)
         if (!canvas) return
         var ctx = canvas.getContext('2d')
-
-        this.showlist(v.datas, 1, ctx)
+        this.createBackground(i + 1)
+        this.showlist(v.datas, i + 1, ctx, v)
 
         ctx.strokeStyle = 'rgb(0,0,0)'
-        ctx.strokeWidth = 1
-
-        this.timer = setInterval(() => {
-          this.showlist(v.datas, 1, ctx)
-        }, 10000)
+        ctx.lineWidth = 2
       })
+    },
+    begin() {
+      this.timerStart = true
+      return true
+    },
+    stop() {
+      this.timerStart = false
+      return false
     }
 
   }

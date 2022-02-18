@@ -58,6 +58,11 @@
           </span>
         </template>
       </el-table-column>
+      <el-table-column label="渠道" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.channel }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" min-width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
