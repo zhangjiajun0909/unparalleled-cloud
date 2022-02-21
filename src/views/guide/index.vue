@@ -85,19 +85,14 @@
   </div>
 </template>
 <script>
-// import Driver from 'driver.js' // import driver.js
 import 'driver.js/dist/driver.min.css' // import driver.js css
 import steps from './steps'
-// import LineChart from '@/views/dashboard/admin/components/LineChart.vue'
 import { getRealTimeCardiogram, getSingleList } from '@/api/user'
 import axios from 'axios'
-// import { actions } from 'plop-templates/view/prompt'
 
 export default {
   name: 'Guide',
   components: {
-    // LineChart,
-    // eslint-disable-next-line vue/no-unused-components
   },
   data() {
     return {
@@ -309,6 +304,7 @@ export default {
       if (this.timer) {
         clearInterval(this.timer)
       }
+
       this.form.startTime = null
       this.form.endTime = null
       this.form.pageNum = 1
@@ -436,7 +432,7 @@ export default {
   margin: 40px;
 }
 .myCanvas {
-  margin-left: 40px;
+  margin-left: 120px;
 }
 /* .box1 {
     position: absolute;
@@ -448,14 +444,18 @@ export default {
 */
 .singleEcg_lala {
   position: relative;
+  margin: 20px 120px;
 }
 .box2 {
     position: absolute;
     left: 0px;
     top: 0px;
-    width: 1100px;
+    width: 100%;
     height: 230px;
     margin-left: 35px;
+}
+.demo-ruleForm {
+  width: 1200px;
 }
 
 </style>

@@ -33,11 +33,11 @@
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="年龄:" width="200px" align="center">
+      <!-- <el-table-column label="年龄:" width="200px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.age }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column v-if="showReviewer" label="Reviewer" min-width="70px" align="center">
         <template slot-scope="{row}">
           <span style="color:red;">{{ row.reviewer }}</span>
@@ -313,17 +313,6 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          // updateArticle(tempData).then(() => {
-          //   const index = this.list.findIndex(v => v.id === this.temp.id)
-          //   this.list.splice(index, 1, this.temp)
-          //   this.dialogFormVisible = false
-          //   this.$notify({
-          //     title: 'Success',
-          //     message: 'Update Successfully',
-          //     type: 'success',
-          //     duration: 2000
-          //   })
-          // })
         }
       })
     },
@@ -338,7 +327,7 @@ export default {
       })
     },
     handleDevice(data) {
-      this.$router.push({ path: `/device/index?username=${data.username}&age=${data.age}&deviceId=${data.devices[0].deviceId}` })
+      this.$router.push({ path: `/device/index?username=${data.username}&deviceId=${data.devices[0].deviceId}` })
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
