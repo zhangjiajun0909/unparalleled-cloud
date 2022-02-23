@@ -63,6 +63,13 @@
           <span>{{ row.channel }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="异常信息" align="center" min-width="100" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button type="text" size="mini" @click="handleSee(row)">
+            查看
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" min-width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
@@ -132,10 +139,31 @@
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="异常心率列表">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="时间" />
-        <el-table-column prop="pv" label="心率值" />
+      <el-table :data="abnormalList" border fit highlight-current-row style="width: 100%">
+        <el-table-column prop="key" label="时间" align="center">
+          <template slot-scope="{row}">
+            <el-button type="text" size="mini" @click="handleUnusual(row)">
+              {{ row.startTime }} ~ {{ row.endTime }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column prop="excepData" label="异常心率最值" align="center">
+          <template slot-scope="{row}">
+            <span style="color: red">
+              {{ row.excepData }}
+            </span>
+          </template>
+        </el-table-column>
       </el-table>
+      <!-- <pagination :total="abnormalData.total" :page.sync="abnormalData.pageNum" :limit.sync="abnormalData.pageNum" @pagination="getAbnormalList" /> -->
+      <el-pagination
+        class="pagination"
+        :current-page.sync="abnormalData.pageNum"
+        :page-size="20"
+        layout="prev, pager, next, jumper"
+        :total="abnormalData.total"
+        @current-change="handleCurrentChange"
+      />
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">关闭</el-button>
       </span>
@@ -149,7 +177,9 @@ import waves from '@/directive/waves' // waves directive
 // import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 // import axios from 'axios'
-import { getList, addUser, getDeviceList, deleteUser } from '@/api/user'
+import { getList, addUser, deleteUser, getAbnormalList } from '@/api/user'
+
+import { formatDate } from '@/utils/format'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: '是' },
@@ -176,7 +206,13 @@ export default {
     },
     typeFilter(type) {
       return calendarTypeKeyValue[type]
+    },
+    // 过滤
+    formatDate(time) {
+      const date = new Date(time)
+      return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
     }
+
   },
   data() {
     return {
@@ -214,24 +250,35 @@ export default {
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
       downloadLoading: false,
-      deviceList: []
+      deviceList: [],
+      abnormalData: {
+        total: 1,
+        pageSize: 20,
+        pageNum: 1
+      },
+      abnormalList: [],
+      currentPage3: 5
     }
   },
   created() {
     this.getList()
-    getDeviceList().then(res => {
-      if (res) {
-        this.deviceList = res.data
-      }
-    })
+    // getDeviceList().then(res => {
+    //   if (res.data) {
+    //     this.deviceList = res.data
+    //   }
+    // })
   },
   methods: {
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`)
+      this.abnormalData.pageNum = val
+    },
     getList(params) {
       this.listLoading = true
       // console.log(fetchList())
       getList(params).then(res => {
         this.listLoading = false
-        console.log(res.data)
+        // console.log(res.data)
         // this.currentPage = res.data.currentPage
         this.list = res.data.results
         this.total = res.data.total
@@ -308,6 +355,15 @@ export default {
       this.userInfo.userName = row.username
       this.userInfo.birthday = row.birthday
     },
+    handleSee(row) {
+      this.dialogPvVisible = true
+      // console.log('abnormalData:', this.abnormalData)
+      this.getAbnormalList({
+        // id: row.id,
+        id: 9667,
+        ...this.abnormalData
+      })
+    },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
@@ -329,6 +385,27 @@ export default {
     handleDevice(data) {
       this.$router.push({ path: `/device/index?username=${data.username}&deviceId=${data.devices[0].deviceId}` })
     },
+    handleUnusual(data) {
+      this.dialogPvVisible = false
+      this.$router.push({
+        path: `/device/index?deviceId=${data.deviceId}&sigName=${data.sigName}`
+        // query: {
+        //   startTime: data.startTime
+        //   // endTime: data.endTime
+        // }
+      })
+      sessionStorage.setItem('startTime', JSON.stringify(data.startTime))
+      sessionStorage.setItem('endTime', JSON.stringify(data.endTime))
+    },
+    getAbnormalList(v) {
+      getAbnormalList(v).then(res => {
+        if (res) {
+          this.abnormalList = res.data.results
+          this.abnormalData.pageNum = res.data.currentPage
+          this.abnormalData.total = res.data.total
+        }
+      })
+    },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
@@ -349,4 +426,10 @@ export default {
 /* .el-button--primary {
   padding-left: 10px;
 } */
+.pagination {
+  margin-top: 20px;
+}
+.el-dialog {
+  width: 800px;
+}
 </style>

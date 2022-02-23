@@ -172,16 +172,40 @@ export default {
       },
       type: 1,
       firstImplement: true,
-      timerStart: false
+      timerStart: false,
+      formatDate2(value) {
+        const date = new Date(value)
+        const y = date.getFullYear()
+        let MM = date.getMonth() + 1
+        MM = MM < 10 ? ('0' + MM) : MM
+        let d = date.getDate()
+        d = d < 10 ? ('0' + d) : d
+        let h = date.getHours()
+        h = h < 10 ? ('0' + h) : h
+        let m = date.getMinutes()
+        m = m < 10 ? ('0' + m) : m
+        let s = date.getSeconds()
+        s = s < 10 ? ('0' + s) : s
+        return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
+      }
     }
   },
-  mounted() {
+  created() {
     this.signalList = []
     getSingleList(this.form.deviceId).then(res => {
       if (res) {
         this.signalList = res.data.sigNames
       }
+      if (this.$route.query.sigName) {
+        this.form.sigNames = [this.$route.query.sigName]
+        // console.log(this.formatDate2(this.$route.params.startTime))
+        this.form.startTime = JSON.parse(sessionStorage.getItem('startTime'))
+        this.form.endTime = JSON.parse(sessionStorage.getItem('endTime'))
+        this.onSubmit(1)
+      }
     })
+
+    //
   },
   beforeDestroy() {
     clearTimeout()
@@ -227,6 +251,7 @@ export default {
           this.loading = true
           if (type === 1) {
             axios.post('http://192.168.0.51:8080/api/v1/cardiogram/history', this.form).then(ret => {
+              if (!ret.data.data) return
               this.fecg_data = ret.data.data.results
               this.form.pageNum = ret.data.data.currentPage
               this.pageTotal = ret.data.data.pageSize

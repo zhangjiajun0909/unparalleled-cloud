@@ -24,6 +24,14 @@ export function getDeviceList() {
   })
 }
 
+// 获取异常列表
+export function getAbnormalList(data) {
+  return requestTest({
+    url: `v1/abnormal/list/${data.id}?pageNum=${data.pageNum}&pageSize=${data.pageSize}`,
+    method: 'get'
+  })
+}
+
 export function deleteUser(userId) {
   return requestTest({
     url: `v1/user-center/user/${userId}/invalid`,
