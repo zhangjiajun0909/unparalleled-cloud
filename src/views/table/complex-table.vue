@@ -5,6 +5,17 @@
       <el-input v-model="listQuery.username" placeholder="请输入" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <span style="margin-left: 10px;">  ID：</span>
       <el-input v-model="listQuery.uid" placeholder="请输入" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <span style="margin-left: 10px;">  渠道：</span>
+
+      <el-select v-model="listQuery.channel" placeholder="请选择">
+        <el-option
+          v-for="item in channelList"
+          :key="item.channel"
+          :label="item.channel"
+          :value="item.channel"
+        />
+      </el-select>
+
       <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -28,7 +39,7 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓名:" min-width="130px" align="center">
+      <el-table-column label="姓名" min-width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
         </template>
@@ -43,7 +54,7 @@
           <span style="color:red;">{{ row.reviewer }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="设备名称" min-width="100px" align="center">
+      <!-- <el-table-column label="设备名称" min-width="100px" align="center">
         <template slot-scope="{row}">
           <span
             v-for="(item, index) in row.devices"
@@ -57,10 +68,24 @@
             {{ item.deviceName }}
           </span>
         </template>
-      </el-table-column>
-      <el-table-column label="渠道" width="100px" align="center">
+      </el-table-column> -->
+      <el-table-column label="渠道(设备名称)" width="350px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.channel }}</span>
+          <span
+            v-for="(item, index) in row.devices"
+            :key="index"
+          >
+            <span>{{ item.channel }}</span>
+            (
+            <span
+              eslint-disable-next-line
+              vue
+              no-use-v-if-with-v-for
+              class="link-type"
+              @click="handleDevice(row)"
+            >{{ item.deviceName }}</span>
+            )
+          </span>
         </template>
       </el-table-column>
       <el-table-column label="异常信息" align="center" min-width="100" class-name="small-padding fixed-width">
@@ -177,7 +202,7 @@ import waves from '@/directive/waves' // waves directive
 // import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 // import axios from 'axios'
-import { getList, addUser, deleteUser, getAbnormalList } from '@/api/user'
+import { getList, addUser, deleteUser, getAbnormalList, getChannels } from '@/api/user'
 
 import { formatDate } from '@/utils/format'
 
@@ -216,6 +241,7 @@ export default {
   },
   data() {
     return {
+      channelList: [],
       tableKey: 0,
       list: [],
       total: 0,
@@ -267,6 +293,7 @@ export default {
     //     this.deviceList = res.data
     //   }
     // })
+    this.getChannelList()
   },
   methods: {
     handleCurrentChange(val) {
@@ -282,6 +309,13 @@ export default {
         // this.currentPage = res.data.currentPage
         this.list = res.data.results
         this.total = res.data.total
+      })
+    },
+    getChannelList() {
+      getChannels().then(res => {
+        if (res) {
+          this.channelList = res.data
+        }
       })
     },
     handleFilter() {

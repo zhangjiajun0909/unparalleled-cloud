@@ -54,6 +54,14 @@ export function getSingleList(deviceId) {
   })
 }
 
+//
+export function getChannels() {
+  return requestTest({
+    url: `v1/device/channels`,
+    method: 'get'
+  })
+}
+
 export function login(data) {
   return request({
     url: '/vue-element-admin/user/login',
