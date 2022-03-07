@@ -348,7 +348,7 @@ export default {
       ctx.fillStyle = 'rgba(255,255,255,1)'
       ctx.fillRect(offsetx, offsety, width, height)
 
-      var d = 20
+      var d = 10
       /* 绘制竖行网格*/
       for (var i = 0; i <= width / d; i++) {
         if (i % 5 === 0) {
